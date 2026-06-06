@@ -1,0 +1,6 @@
+{
+  "name": "HL Multimarcas Boutique",
+  "description": "Premium women's fashion boutique located in Vila Harmonia, Araraquara, SP. Explores our curated catalog and route directions with an AI personal stylist assistant.",
+  "requestFramePermissions": ["geolocation"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
