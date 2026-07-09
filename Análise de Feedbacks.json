@@ -1,0 +1,274 @@
+{
+  "name": "Análise de Feedbacks",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "b9fcfd8d-7494-438b-aaca-821722983815",
+      "name": "Mensagem Inicial",
+      "webhookId": "e8241f94-85ab-4e5d-b1fd-29c142fff199",
+      "credentials": {
+        "telegramApi": {
+          "id": "HpXOcSQJbYNdtjiw",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.message.chat.id }}",
+        "text": "=",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e1bc8c1b-b826-492c-a006-f2e93325776e",
+      "name": "Identificador da Mensagem",
+      "webhookId": "0b7d4780-6962-468b-89ae-1cf8ee6dadfe",
+      "credentials": {
+        "telegramApi": {
+          "id": "HpXOcSQJbYNdtjiw",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a51c4147-ff2d-45d1-985a-3210748362a0",
+              "name": "pergunta",
+              "value": "={{ $('Mensagem Inicial').item.json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "d087bb55-1180-4019-baf5-f1a41b8514df",
+              "name": "chatid",
+              "value": "={{ $('Mensagem Inicial').item.json.message.chat.id }}",
+              "type": "number"
+            },
+            {
+              "id": "b0c442f9-3f22-40cc-aa98-769e62bc5672",
+              "name": "prompt",
+              "value": "={{ 'Você é uma especialista em comportamento do consumidor e análise de insights com 10 anos de experiência em varejo e e-commerce brasileiro. Responda em português do Brasil, com tópicos claros, máximo 250 palavras, sem jargões técnicos. Comece direto na análise. Pergunta da analista: ' + $('Mensagem Inicial').item.json.message.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        0
+      ],
+      "id": "aac72ae6-af00-48cf-bd88-64bb31ee120c",
+      "name": "Construtor Prompt"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBearerAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "gpt-4o-mini"
+            },
+            {
+              "name": "messages",
+              "value": "={{ [{ role: 'user', content: $json.prompt }] }}"
+            },
+            {
+              "name": "temperature",
+              "value": "={{ Number(0.5) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "c1db3771-705b-471c-b03d-d94b2e2aac3d",
+      "name": "Minha IA",
+      "credentials": {
+        "httpBearerAuth": {
+          "id": "JnsXZdtLI43MwYHx",
+          "name": "Bearer Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const openai = $input.first().json;\nconst resposta = openai.choices?.[0]?.message?.content || openai.text || openai.content || 'Sem resposta da IA';\nconst pergunta = $('Construtor Prompt').first().json.pergunta;\nconst chatId = $('Mensagem Inicial').first().json.message.from.id;\nconst agora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' });\nconst respostaHtml = resposta.replace(/\\n/g, '<br>');\nconst html = `<div style=\"font-family:Arial,sans-serif;max-width:680px;margin:0 auto\">\n  <div style=\"background:#0D1B2E;padding:20px;border-radius:8px 8px 0 0\">\n    <h2 style=\"color:#E8622A;margin:0\">📊 Análise do Consumidor</h2>\n    <p style=\"color:#C8D8E8;margin:8px 0 0\">Tander Bootcamp - Aula 04</p>\n  </div>\n  <div style=\"background:#F2F5F9;padding:18px;border-left:4px solid #E8622A\">\n    <p style=\"color:#4A5568;font-size:14px\"><strong>Pergunta:</strong> ${pergunta}</p>\n  </div>\n  <div style=\"background:#FFFFFF;padding:20px;border:1px solid #D0D5DC\">\n    <p style=\"color:#1A202C;line-height:1.7\">${respostaHtml}</p>\n  </div>\n  <div style=\"background:#0D1B2E;padding:12px 20px;border-radius:0 0 8px 8px\">\n    <p style=\"color:#8899AA;font-size:12px;margin:0\">Gerado em ${agora} - Tander Bootcamp</p>\n  </div>\n</div>`;\nreturn [{ json: { resposta, pergunta, chatId, agora, html, subject: `Análise do Consumidor - ${agora}` } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        832,
+        0
+      ],
+      "id": "0884635c-325e-41df-adee-44ffded5b269",
+      "name": "Formato SAÍDA"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.resposta }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "25705129-7fa2-40ec-b842-af04d4f66745",
+      "name": "Mensagem de Resposta - Feedback",
+      "webhookId": "6b365a78-f464-4ab7-be35-e7326720b330",
+      "credentials": {
+        "telegramApi": {
+          "id": "HpXOcSQJbYNdtjiw",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "maisa@gmail.com",
+        "toEmail": "mpenteadoanhanguera@gmail.com",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1040,
+        208
+      ],
+      "id": "e86ca922-805f-43f7-b009-7dc5bffedff0",
+      "name": "Mensagem de Resposta - Feedback1",
+      "webhookId": "9cceb8c6-474c-47e4-ab2b-8fe6d5a456d5",
+      "credentials": {
+        "smtp": {
+          "id": "ETlHWe9hrMav2DhX",
+          "name": "SMTP account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Mensagem Inicial": {
+      "main": [
+        [
+          {
+            "node": "Identificador da Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identificador da Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Construtor Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Construtor Prompt": {
+      "main": [
+        [
+          {
+            "node": "Minha IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Minha IA": {
+      "main": [
+        [
+          {
+            "node": "Formato SAÍDA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato SAÍDA": {
+      "main": [
+        [
+          {
+            "node": "Mensagem de Resposta - Feedback",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Mensagem de Resposta - Feedback1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem de Resposta - Feedback": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "de16e2f8-c297-4118-b88e-6627ef095ba0",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "a5d789f52bce8645773ba6821a825da1ea7c0b0650b001a5288381499f03c624"
+  },
+  "nodeGroups": [],
+  "id": "khAbpwmfan6avjK1",
+  "tags": []
+}
