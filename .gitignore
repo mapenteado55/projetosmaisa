@@ -1,0 +1,52 @@
+# ==========================================================
+# SEGURANÇA — NÃO VERSIONAR CREDENCIAIS E SEGREDOS
+# ==========================================================
+
+# Variáveis de ambiente
+.env
+.env.*
+*.env
+
+# Credenciais e secrets
+credentials.json
+credentials*.json
+secrets.json
+secrets*.json
+
+# Chaves e certificados privados
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Arquivos locais com tokens / credenciais
+*secret*
+*token*
+*credentials*
+
+# ==========================================================
+# SISTEMA OPERACIONAL
+# ==========================================================
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# macOS
+.DS_Store
+
+# ==========================================================
+# EDITORES / IDE
+# ==========================================================
+
+.vscode/
+.idea/
+
+# ==========================================================
+# ARQUIVOS TEMPORÁRIOS
+# ==========================================================
+
+*.tmp
+*.temp
+*.log
+*.bak
