@@ -167,8 +167,8 @@
     },
     {
       "parameters": {
-        "fromEmail": "maisa@gmail.com",
-        "toEmail": "mpenteadoanhanguera@gmail.com",
+        "fromEmail": "[COLOQUE_AQUI_SEU_EMAIL]",
+        "toEmail": "[COLOQUE_AQUI_SEU_EMAIL]",
         "subject": "={{ $json.subject }}",
         "html": "={{ $json.html }}",
         "options": {}
